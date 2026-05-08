@@ -1,13 +1,11 @@
 use assert_cmd::Command;
-use predicates::prelude::*;
+use predicates::str::contains;
 use std::fs;
 
 #[test]
 fn dies_no_args() {
     let mut cmd = Command::cargo_bin("echor").unwrap();
-    cmd.assert()
-        .failure()
-        .stderr(predicates::str::contains("Usage"));
+    cmd.assert().failure().stderr(contains("Usage"));
 }
 
 #[test]
