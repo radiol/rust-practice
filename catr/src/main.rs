@@ -32,11 +32,11 @@ fn run(cli: Cli) -> MyResult<()> {
                 for (line_num, line_result) in file.lines().enumerate() {
                     let line = line_result?;
                     match (cli.number_lines, cli.number_nonblank_lines) {
-                        (true, _) => println!("{:6}\t{line}", line_num + 1),
+                        (true, _) => println!("{:>6}\t{line}", line_num + 1),
                         (_, true) => {
                             if !line.is_empty() {
                                 prev_num += 1;
-                                println!("{:6}\t{line}", prev_num);
+                                println!("{:>6}\t{line}", prev_num);
                             } else {
                                 println!();
                             }
