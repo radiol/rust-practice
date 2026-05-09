@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
@@ -29,20 +29,20 @@ struct Cli {
 
 fn main() {
     if let Err(e) = run(Cli::parse()) {
-        eprintln!("Error: {e}");
+        eprintln!("{e}");
         std::process::exit(1);
     }
 }
 
 fn run(cli: Cli) -> Result<()> {
-    let file_num = cli.files.len();
+    let num_files = cli.files.len();
     for (i, filename) in cli.files.iter().enumerate() {
         match open(filename) {
             Err(err) => {
                 eprintln!("{filename}: {err}");
             }
             Ok(mut file) => {
-                if file_num > 1 {
+                if num_files > 1 {
                     println!("{}==> {filename} <==", if i > 0 { "\n" } else { "" });
                 }
                 if let Some(num_bytes) = cli.bytes {
@@ -52,11 +52,11 @@ fn run(cli: Cli) -> Result<()> {
                 } else {
                     let mut line = String::new();
                     for _ in 0..cli.lines {
-                        let byte = file.read_line(&mut line)?;
-                        if byte == 0 {
+                        let bytes = file.read_line(&mut line)?;
+                        if bytes == 0 {
                             break;
                         }
-                        print!("{line}");
+                        print!("{}", line);
                         line.clear();
                     }
                 }
