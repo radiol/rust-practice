@@ -32,8 +32,9 @@ fn run(cli: Cli) -> MyResult<()> {
                 for (line_num, line_result) in file.lines().enumerate() {
                     let line = line_result?;
                     match (cli.number_lines, cli.number_nonblank_lines) {
-                        (true, _) => println!("{:6}\t{line}", line_num + 1),
-                        (_, true) => {
+                        (true, true) => unreachable!(),
+                        (true, false) => println!("{:6}\t{line}", line_num + 1),
+                        (false, true) => {
                             if !line.is_empty() {
                                 prev_num += 1;
                                 println!("{:6}\t{line}", prev_num);
@@ -41,7 +42,7 @@ fn run(cli: Cli) -> MyResult<()> {
                                 println!();
                             }
                         }
-                        (_, _) => println!("{line}"),
+                        (false, false) => println!("{line}"),
                     }
                 }
             }
