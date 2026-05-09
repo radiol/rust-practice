@@ -26,22 +26,22 @@ fn main() {
 fn run(cli: Cli) -> MyResult<()> {
     for filename in cli.files {
         match open(&filename) {
-            Err(e) => eprintln!("{filename}: {e}"),
+            Err(e) => eprintln!("catr: {filename}: {e}"),
             Ok(file) => {
                 let mut prev_num = 0;
                 for (line_num, line_result) in file.lines().enumerate() {
                     let line = line_result?;
-                    if cli.number_lines {
-                        println!("{:6}\t{line}", line_num + 1);
-                    } else if cli.number_nonblank_lines {
-                        if !line.is_empty() {
-                            prev_num += 1;
-                            println!("{:6}\t{line}", prev_num);
-                        } else {
-                            println!();
+                    match (cli.number_lines, cli.number_nonblank_lines) {
+                        (true, _) => println!("{:6}\t{line}", line_num + 1),
+                        (_, true) => {
+                            if !line.is_empty() {
+                                prev_num += 1;
+                                println!("{:6}\t{line}", prev_num);
+                            } else {
+                                println!();
+                            }
                         }
-                    } else {
-                        println!("{line}");
+                        (_, _) => println!("{line}"),
                     }
                 }
             }
