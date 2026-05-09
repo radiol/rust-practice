@@ -1,5 +1,7 @@
-use clap::Parser;
 use anyhow::Result;
+use clap::Parser;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Read};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
@@ -25,8 +27,48 @@ struct Cli {
     bytes: Option<u64>,
 }
 
-fn main() -> Result<()> {
-    let cli = Cli::parse();
-    dbg!(&cli);
+fn main() {
+    if let Err(e) = run(Cli::parse()) {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    }
+}
+
+fn run(cli: Cli) -> Result<()> {
+    let file_num = cli.files.len();
+    for (i, filename) in cli.files.iter().enumerate() {
+        match open(filename) {
+            Err(err) => {
+                eprintln!("{filename}: {err}");
+            }
+            Ok(mut file) => {
+                if file_num > 1 {
+                    println!("{}==> {filename} <==", if i > 0 { "\n" } else { "" });
+                }
+                if let Some(num_bytes) = cli.bytes {
+                    let mut buf = vec![0; num_bytes as usize];
+                    let bytes_read = file.read(&mut buf)?;
+                    print!("{}", String::from_utf8_lossy(&buf[..bytes_read]));
+                } else {
+                    let mut line = String::new();
+                    for _ in 0..cli.lines {
+                        let byte = file.read_line(&mut line)?;
+                        if byte == 0 {
+                            break;
+                        }
+                        print!("{line}");
+                        line.clear();
+                    }
+                }
+            }
+        }
+    }
     Ok(())
+}
+
+fn open(filename: &str) -> Result<Box<dyn BufRead>> {
+    match filename {
+        "-" => Ok(Box::new(BufReader::new(std::io::stdin()))),
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
 }
